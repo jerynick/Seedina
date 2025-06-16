@@ -1,0 +1,1 @@
+ C:\\Kuliah\\Polije\ TKK\\Semester\ 6\\Huruhara\\seedina\\.dart_tool\\flutter_build\\8e1d10a98c6204e98ca94cd38f708208\\native_assets.json: 

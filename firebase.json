@@ -1,0 +1,22 @@
+{
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "seedina-app",
+                    "appId": "1:660277912808:android:d61dc39514f25f3c5c555d",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": "seedina-app",
+                    "configurations": {
+                        "android": "1:660277912808:android:d61dc39514f25f3c5c555d",
+                        "ios": "1:660277912808:ios:ed4a3057ad4de67c5c555d"
+                    }
+                }
+            }
+        }
+    }
+}
