@@ -60,7 +60,7 @@ class _PresetParameterState extends State<PresetParameter> {
     // Mengembalikan UI Lama
     return Container(
       width: MediaQuery.of(context).size.width,
-      decoration: BoxDecoration( // UI Lama
+      decoration: BoxDecoration( 
         borderRadius: BorderRadius.circular(16),
         color: Colors.white,
         boxShadow: [
@@ -73,13 +73,13 @@ class _PresetParameterState extends State<PresetParameter> {
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(12), // UI Lama
+        padding: const EdgeInsets.all(12), 
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row( // UI Lama
+            Row( 
               children: [
-                SizedBox( // UI Lama
+                SizedBox( 
                   width: 100,
                   height: 100,
                   child: Image.asset(plantInfoToDisplay['thumbnail'] ?? 'assets/myicon/unknown.png'),
@@ -107,21 +107,21 @@ class _PresetParameterState extends State<PresetParameter> {
                 )
               ],
             ),
-            const Divider(), // UI Lama
-            const SizedBox(height: 10), // UI Lama
-            Column( // UI Lama
+            const Divider(), 
+            const SizedBox(height: 10), 
+            Column( 
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(child: InfoColumn( // UI Lama (menggunakan Expanded agar rapi)
+                    Expanded(child: InfoColumn(
                       title: 'Waktu Siram',
                       fontSize: 16,
                       space: 8,
                       value: '$idealWaktuSiramDisplay Menit',
                     )),
                     SizedBox(width: 8),
-                    Expanded(child: InfoColumn( // UI Lama
+                    Expanded(child: InfoColumn( 
                       title: 'Suhu Ideal',
                       fontSize: 16,
                       space: 8,
@@ -129,18 +129,18 @@ class _PresetParameterState extends State<PresetParameter> {
                     )),
                   ],
                 ),
-                const Divider(), // UI Lama
+                const Divider(), 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                     Expanded(child:InfoColumn( // UI Lama
+                     Expanded(child:InfoColumn( 
                       title: 'EC Ideal',
                       fontSize: 16,
                       space: 8,
                       value: '$idealECDisplay mS/cm',
                     )),
                     SizedBox(width: 8),
-                    Expanded(child:InfoColumn( // UI Lama
+                    Expanded(child:InfoColumn( 
                       title: 'Nutrisi Ideal',
                       fontSize: 16,
                       space: 8,
@@ -150,10 +150,10 @@ class _PresetParameterState extends State<PresetParameter> {
                 ),
               ],
             ),
-            const Divider(), // UI Lama
-            ElevatedButton( // UI Lama
+            const Divider(), 
+            ElevatedButton( 
               onPressed: _isSaving ? null : () => _applyAndSaveChanges(context),
-              style: ElevatedButton.styleFrom( // UI Lama
+              style: ElevatedButton.styleFrom( 
                 backgroundColor: GColors.myBiru,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
@@ -163,7 +163,7 @@ class _PresetParameterState extends State<PresetParameter> {
               ),
               child: _isSaving 
               ? const SizedBox(height:20, width:20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5,))
-              : const Row( // UI Lama
+              : const Row( 
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.upload), // Sesuaikan dengan ikon UI Lama

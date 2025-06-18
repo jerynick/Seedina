@@ -10,7 +10,7 @@ class SignInOrSignUp extends StatefulWidget {
 }
 
 class _SignInOrSignUpState extends State<SignInOrSignUp> {
-  // Boolean to track whether to show the login page or sign up page
+
   bool showLoginPage = true;
 
   // Function to toggle between login and sign up pages
@@ -24,9 +24,9 @@ class _SignInOrSignUpState extends State<SignInOrSignUp> {
   Widget build(BuildContext context) {
 
     if (showLoginPage) {
-      return SignInPage(onTap: togglePages); // Show login page
+      return SignInPage(onTap: togglePages);
     } else {
-      return SignUpPage(onTap: togglePages); // Show sign up page
+      return SignUpPage(onTap: togglePages);
     }
 
   }

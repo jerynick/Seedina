@@ -10,7 +10,6 @@ import "package:seedina/utils/rewidgets/contentbox/for_monitoring/infocolumn.dar
 import "package:seedina/utils/rewidgets/contentbox/for_monitoring/monitoringbox.dart";
 import "package:seedina/utils/style/gcolor.dart";
 
-// Define the OverviewScreen class as a StatefulWidget
 class OverviewScreen extends StatefulWidget {
   const OverviewScreen({super.key});
 
@@ -18,7 +17,6 @@ class OverviewScreen extends StatefulWidget {
   State<OverviewScreen> createState() => _OverviewScreenState();
 }
 
-// Define the state for OverviewScreen
 class _OverviewScreenState extends State<OverviewScreen> {
 
   @override
@@ -28,10 +26,8 @@ class _OverviewScreenState extends State<OverviewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Get the current user from AuthService
     final User? user = FirebaseAuth.instance.currentUser;
 
-    // Get the display name of the user or default to 'Farms'
     final String displayName = user?.displayName ?? 'Farms';
 
     // Get various plant monitoring data from the HandlingProvider
@@ -271,7 +267,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
                                               title: 'EC Ideal',
                                               fontSize: 20,
                                               space: 8,
-                                              value: '$idealEC' // Display ideal pH
+                                              value: '$idealEC' // Display ideal EC
                                             ),
                                             //VerticalDivider(color: Colors.grey, thickness: 1, width: 20,),
                                             InfoColumn(

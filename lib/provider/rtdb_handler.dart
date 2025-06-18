@@ -8,11 +8,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:seedina/services/auth_service.dart';
 
 class HandlingProvider extends ChangeNotifier {
-  // --- STATE AKTIF (Untuk Overview & Data Tersimpan) ---
   Map<String, dynamic> _activeParameters = {};
   String _activeSelectedPlant = '';
 
-  // Nilai sensor aktual
   int humiLing = 0;
   int tdsAir = 0;
   double ecAir = 0.0;
@@ -20,7 +18,6 @@ class HandlingProvider extends ChangeNotifier {
   double suhuAir = 0.0;
   double suhuLing = 0.0;
 
-  // Nilai ideal yang diturunkan dari _activeParameters (untuk Overview)
   String namaTanaman = 'Pilih Tanaman';
   String namaLatin = '...';
   String gambar = 'assets/myicon/unknown.png';
@@ -30,11 +27,9 @@ class HandlingProvider extends ChangeNotifier {
   double idealNutrisi = 0.0;
   double idealEC = 0.0;
 
-  // --- STATE DRAFT (Untuk Halaman EditPlants) ---
   Map<String, dynamic> _draftParametersForEditing = {};
   String _draftSelectedPlantForEditing = '';
 
-  // --- State Lainnya ---
   String? _userSeedkey;
   bool _isInitialized = false;
   bool _isLoading = true;
@@ -45,7 +40,7 @@ class HandlingProvider extends ChangeNotifier {
   String? phMeasurementError;
 
   StreamSubscription<DatabaseEvent>? _monitoringSubscription;
-  StreamSubscription<DatabaseEvent>? _parameterSubscription; // Akan listen ke _activeParameters di RTDB
+  StreamSubscription<DatabaseEvent>? _parameterSubscription;
   StreamSubscription<DatabaseEvent>? _onDemandPhSubscription;
   StreamSubscription<User?>? _authSubscription;
 
@@ -95,9 +90,9 @@ class HandlingProvider extends ChangeNotifier {
       'min_humiling': 70,
       'max_humiling': 90,
     },
-    'Kustom': { // Ini adalah template default untuk Kustom jika tidak ada basis lain
-      'title': 'Tanaman Lain', // Default title untuk Kustom
-      'latin': 'Parameter Kustom', // Default latin untuk Kustom
+    'Kustom': {
+      'title': 'Tanaman Lain',
+      'latin': 'Parameter Kustom',
       'thumbnail': 'assets/myicon/unknown.png',
       'jeda_siram': 30,
       'waktu_siram': 5,
@@ -112,12 +107,9 @@ class HandlingProvider extends ChangeNotifier {
     }
   };
 
-  // --- Getters untuk UI Overview (berdasarkan _activeParameters) ---
   String get activeSelectedPlant => _activeSelectedPlant;
-  Map<String, dynamic> get activeParameters => _activeParameters; // Sebenarnya tidak perlu diexpose jika nilai ideal sudah cukup
+  Map<String, dynamic> get activeParameters => _activeParameters; 
 
-
-  // --- Getters untuk UI EditPlants (berdasarkan _draftParametersForEditing) ---
   String get draftSelectedPlantForEditing => _draftSelectedPlantForEditing;
   Map<String, dynamic> get draftParametersForEditing => _draftParametersForEditing;
 
@@ -150,7 +142,6 @@ class HandlingProvider extends ChangeNotifier {
   }
 
 
-  // --- Getters lainnya ---
   bool get isInitialized => _isInitialized;
   bool get isLoading => _isLoading;
   String? get currentUserSeedKey => _userSeedkey;
@@ -161,7 +152,7 @@ class HandlingProvider extends ChangeNotifier {
     return FirebaseDatabase.instance.ref().child(_userSeedkey!);
   }
   DatabaseReference? get _monitoringDataRef => _baseRef?.child('monitoring');
-  DatabaseReference? get _activeParameterDataRef => _baseRef?.child('parameter'); // Path untuk parameter aktif di RTDB
+  DatabaseReference? get _activeParameterDataRef => _baseRef?.child('parameter');
   DatabaseReference? get _phRequestRef => _baseRef?.child('commands/ph_request');
   DatabaseReference? get _phResultRef => _baseRef?.child('ph_ondemand');
 
@@ -188,7 +179,7 @@ class HandlingProvider extends ChangeNotifier {
         }).catchError((e) {
           if (kDebugMode) print("Error fetching user doc: $e");
           if (!_isInitialized || _userSeedkey == null) {
-            _initializeProviderStates(); // Coba inisialisasi dengan apa yang ada
+            _initializeProviderStates();
           }
         });
       }
@@ -205,12 +196,12 @@ class HandlingProvider extends ChangeNotifier {
     _draftSelectedPlantForEditing = '';
 
     humiLing = 0; tdsAir = 0; ecAir = 0.0; tinggiAir = 0.0; suhuAir = 0.0; suhuLing = 0.0;
-    _updateDisplayParametersFromActiveData(); // Ini akan set nilai ideal ke 0 atau default
+    _updateDisplayParametersFromActiveData(); 
 
     _userSeedkey = null;
     _isSeedKeyReady = false;
-    _isInitialized = true; // Dianggap selesai reset
-    _isLoading = false; // Selesai reset
+    _isInitialized = true; 
+    _isLoading = false;
 
     onDemandPhValue = null; isPhMeasuring = false; phMeasurementError = null;
 
@@ -228,11 +219,10 @@ class HandlingProvider extends ChangeNotifier {
 
     final currentUser = AuthService.currentUser;
     if (currentUser == null) {
-      _resetAllStates(); // Pastikan semua state direset jika tidak ada user
+      _resetAllStates();
       return;
     }
 
-    // 1. Load _activeSelectedPlant dari Firestore (atau SharedPreferences sebagai fallback)
     DocumentSnapshot? userDoc = await AuthService.getUserDoc(currentUser.uid);
     String? firestoreSelectedPlant;
     if (userDoc != null && userDoc.exists) {
@@ -254,24 +244,22 @@ class HandlingProvider extends ChangeNotifier {
       }
     }
 
-    // 2. Setup listener dan load _activeParameters dari RTDB
     if (_isSeedKeyReady && _baseRef != null) {
       await _setupFirebaseListenersAndInitialLoad();
     } else {
-      // Tidak ada seedkey, gunakan parameter lokal berdasarkan _activeSelectedPlant
       if (parameters.containsKey(_activeSelectedPlant)) {
         _activeParameters = Map.from(parameters[_activeSelectedPlant]!);
-      } else { // Default ke Kustom jika _activeSelectedPlant tidak valid
+      } else { 
         _activeSelectedPlant = "Kustom";
         _activeParameters = Map.from(parameters["Kustom"]!);
       }
       _updateDisplayParametersFromActiveData();
-      _initializeDraftParametersFromActive(); // Sinkronkan draft
+      _initializeDraftParametersFromActive(); 
       _isLoading = false;
     }
     
     _isInitialized = true;
-    // _isLoading akan di-set false di dalam _setupFirebaseListenersAndInitialLoad atau di atas
+
     if (hasListeners) notifyListeners();
   }
   
@@ -281,12 +269,12 @@ class HandlingProvider extends ChangeNotifier {
     await _onDemandPhSubscription?.cancel(); _onDemandPhSubscription = null;
 
     final monitoringRef = _monitoringDataRef;
-    final activeParameterRef = _activeParameterDataRef; // Menggunakan path parameter aktif
+    final activeParameterRef = _activeParameterDataRef;
     final onDemandPhRef = _phResultRef;
 
     if (monitoringRef == null || activeParameterRef == null || onDemandPhRef == null) {
       if (kDebugMode) print("[HandlingProvider] Firebase refs not ready, using local defaults for active params.");
-      // Fallback jika ref tidak siap (seharusnya jarang terjadi jika _isSeedKeyReady true)
+
       if (parameters.containsKey(_activeSelectedPlant)) {
         _activeParameters = Map.from(parameters[_activeSelectedPlant]!);
       } else {
@@ -305,7 +293,7 @@ class HandlingProvider extends ChangeNotifier {
 
     void checkInitialLoadComplete() {
       if (initialMonitoringLoaded && initialParameterLoaded) {
-        _initializeDraftParametersFromActive(); // PENTING: Inisialisasi draft setelah data aktif dimuat
+        _initializeDraftParametersFromActive();
         if (_isLoading) {
           _isLoading = false;
           if (hasListeners) notifyListeners();
@@ -313,17 +301,16 @@ class HandlingProvider extends ChangeNotifier {
       }
     }
 
-    // Load initial active parameters
     try {
       DatabaseEvent initialParameterEvent = await activeParameterRef.once().timeout(const Duration(seconds: 7));
-      _handleActiveParameterData(initialParameterEvent); // Ini akan set _activeParameters dan _activeSelectedPlant
+      _handleActiveParameterData(initialParameterEvent);
     } catch (e) {
       if (kDebugMode) print("[HandlingProvider] Error loading initial active parameters from RTDB: $e. Using local based on _activeSelectedPlant: $_activeSelectedPlant");
-      // Fallback jika gagal load dari RTDB
+
       if (parameters.containsKey(_activeSelectedPlant)) {
         _activeParameters = Map.from(parameters[_activeSelectedPlant]!);
-      } else { // Default ke Kustom jika _activeSelectedPlant tidak valid
-        _activeSelectedPlant = "Kustom"; // Update _activeSelectedPlant juga
+      } else {
+        _activeSelectedPlant = "Kustom";
         _activeParameters = Map.from(parameters["Kustom"]!);
       }
       _updateDisplayParametersFromActiveData();
@@ -332,7 +319,6 @@ class HandlingProvider extends ChangeNotifier {
       checkInitialLoadComplete();
     }
 
-    // Load initial monitoring data
     try {
       DatabaseEvent initialMonitoringEvent = await monitoringRef.once().timeout(const Duration(seconds: 7));
       _handleMonitoringData(initialMonitoringEvent);
@@ -358,24 +344,22 @@ class HandlingProvider extends ChangeNotifier {
 
     if (data != null && data is Map && data.isNotEmpty) {
       Map<String, dynamic> paramsFromRTDB = Map.from(data);
-      String determinedPlantType = _activeSelectedPlant; // Default ke yang sudah ada
+      String determinedPlantType = _activeSelectedPlant;
 
       final String? rtdbTitle = paramsFromRTDB['title'] as String?;
       if (rtdbTitle != null && rtdbTitle.isNotEmpty) {
-        if (parameters.containsKey(rtdbTitle)) { // Jika judulnya adalah nama preset
+        if (parameters.containsKey(rtdbTitle)) {
           determinedPlantType = rtdbTitle;
-        } else { // Judulnya bukan preset, kemungkinan Kustom
+        } else {
           bool hasKustomStructure = paramsFromRTDB.containsKey('jeda_siram') && paramsFromRTDB.containsKey('waktu_siram');
           if (hasKustomStructure) {
             determinedPlantType = "Kustom";
-            // Pastikan field Kustom default ada jika tidak ada di RTDB
             Map<String,dynamic> tempKustom = Map.from(parameters["Kustom"]!);
             tempKustom.addAll(paramsFromRTDB);
             paramsFromRTDB = tempKustom;
           }
-          // else: struktur tidak jelas, biarkan determinedPlantType seperti _activeSelectedPlant
         }
-      } else { // Tidak ada title di RTDB, coba deteksi Kustom dari struktur
+      } else { 
         bool hasKustomStructure = paramsFromRTDB.containsKey('jeda_siram') && paramsFromRTDB.containsKey('waktu_siram');
         if (hasKustomStructure) {
           determinedPlantType = "Kustom";
@@ -389,17 +373,16 @@ class HandlingProvider extends ChangeNotifier {
         _activeParameters = paramsFromRTDB;
         _activeSelectedPlant = determinedPlantType;
         needsDisplayUpdate = true;
-        // Simpan _activeSelectedPlant ke SharedPreferences jika berubah dari RTDB
+
         SharedPreferences.getInstance().then((prefs) => prefs.setString('selectedPlant', _activeSelectedPlant));
-        // Tidak perlu update Firestore di sini, itu hanya untuk pilihan eksplisit pengguna
       }
-    } else { // Data RTDB kosong atau tidak valid
+    } else {
       if (kDebugMode) print("[HandlingProvider] Active parameter data from RTDB is null/empty. Using local for '$_activeSelectedPlant'.");
       Map<String,dynamic> fallbackParams;
       if (parameters.containsKey(_activeSelectedPlant)) {
         fallbackParams = Map.from(parameters[_activeSelectedPlant]!);
       } else {
-        _activeSelectedPlant = "Kustom"; // Default ke Kustom jika _activeSelectedPlant tidak valid
+        _activeSelectedPlant = "Kustom";
         fallbackParams = Map.from(parameters["Kustom"]!);
       }
       if (!mapEquals(_activeParameters, fallbackParams)){
@@ -411,17 +394,14 @@ class HandlingProvider extends ChangeNotifier {
     if (needsDisplayUpdate) {
       _updateDisplayParametersFromActiveData();
     }
-    // Perubahan pada parameter aktif harus selalu menyinkronkan draft jika draft belum diubah pengguna
-    // Untuk menghindari loop, ini sebaiknya hanya dilakukan saat inisialisasi atau reset
-    // _initializeDraftParametersFromActive(); // Hati-hati jika ini dipanggil terlalu sering
   }
   
   void _updateDisplayParametersFromActiveData() {
     if (_activeParameters.isEmpty && _activeSelectedPlant.isNotEmpty && parameters.containsKey(_activeSelectedPlant)) {
-      // Jika _activeParameters kosong tapi _activeSelectedPlant valid, isi dari preset map
+
        _activeParameters = Map.from(parameters[_activeSelectedPlant]!);
     } else if (_activeParameters.isEmpty) {
-      // Fallback jika semua kosong
+
       _activeParameters = Map.from(parameters["Kustom"]!);
       _activeSelectedPlant = "Kustom";
     }
@@ -447,106 +427,97 @@ class HandlingProvider extends ChangeNotifier {
       _draftSelectedPlantForEditing = _activeSelectedPlant;
       _draftParametersForEditing = Map.from(_activeParameters.isNotEmpty ? _activeParameters : parameters[_activeSelectedPlant] ?? parameters["Kustom"]!);
     } else if (parameters.isNotEmpty) {
-      _draftSelectedPlantForEditing = parameters.keys.first; // Default ke preset pertama jika tidak ada yang aktif
+      _draftSelectedPlantForEditing = parameters.keys.first;
       _draftParametersForEditing = Map.from(parameters[_draftSelectedPlantForEditing]!);
-    } else { // Fallback jika `parameters` map kosong (seharusnya tidak terjadi)
+    } else {
       _draftSelectedPlantForEditing = "Kustom";
       _draftParametersForEditing = Map.from(parameters["Kustom"]!);
     }
     if (kDebugMode) print("[HandlingProvider] Draft parameters initialized from active: $_draftSelectedPlantForEditing");
-    if (hasListeners) notifyListeners(); // Notify untuk update UI EditPlants jika bergantung pada draft
+    if (hasListeners) notifyListeners(); 
   }
 
-  // METHOD BARU: Dipanggil dari dropdown di EditPlants
   void selectPlantForEditingPage(String plantNameFromDropdown) {
     _draftSelectedPlantForEditing = plantNameFromDropdown;
 
     if (plantNameFromDropdown == "Kustom") {
-      // KUNCI: Saat memilih "Kustom", _draftParametersForEditing diisi dari _activeParameters AKTIF saat itu
+
       _draftParametersForEditing = Map.from(_activeParameters.isNotEmpty ? _activeParameters : parameters["Kustom"]!);
       
-      // Atur judul, latin, thumbnail untuk form Kustom, karena sumbernya bisa jadi preset.
-      // Nilai parameter (suhu, tds, dll.) akan tetap dari _activeParameters.
       _draftParametersForEditing['title'] = parameters['Kustom']!['title']; // "Tanaman Lain"
       _draftParametersForEditing['latin'] = parameters['Kustom']!['latin']; // "Parameter Kustom"
-      _draftParametersForEditing['thumbnail'] = parameters['Kustom']!['thumbnail']; // Gambar default Kustom
+      _draftParametersForEditing['thumbnail'] = parameters['Kustom']!['thumbnail'];
       if (kDebugMode) print("[HandlingProvider] Switched draft to Kustom, initialized from active params. Draft title: ${_draftParametersForEditing['title']}");
 
     } else if (parameters.containsKey(plantNameFromDropdown)) {
       _draftParametersForEditing = Map.from(parameters[plantNameFromDropdown]!);
        if (kDebugMode) print("[HandlingProvider] Switched draft to preset: $plantNameFromDropdown");
     } else {
-      // Fallback, seharusnya tidak terjadi
       _draftSelectedPlantForEditing = parameters.keys.first;
       _draftParametersForEditing = Map.from(parameters[_draftSelectedPlantForEditing]!);
       if (kDebugMode) print("[HandlingProvider] Fallback draft to: $_draftSelectedPlantForEditing");
     }
-    notifyListeners(); // Update UI halaman EditPlants
+    notifyListeners();
   }
 
-  // METHOD BARU: Dipanggil dari tombol "Terapkan Parameter ke Sistem" di PresetParameter
   Future<bool> applyDraftPresetToActive(BuildContext context) async {
     if (_draftSelectedPlantForEditing == "Kustom" || !parameters.containsKey(_draftSelectedPlantForEditing)) {
       if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Pilih preset yang valid untuk diterapkan.")));
       return false;
     }
 
-    _activeParameters = Map.from(_draftParametersForEditing); // Commit draft ke aktif
+    _activeParameters = Map.from(_draftParametersForEditing);
     _activeSelectedPlant = _draftSelectedPlantForEditing;
 
     bool firestoreSuccess = await _saveActiveSelectedPlantToFirestore(context);
     bool rtdbSuccess = false;
     if (firestoreSuccess) {
-      rtdbSuccess = await _saveActiveParametersToRTDB(context: context); // Kirim _activeParameters
+      rtdbSuccess = await _saveActiveParametersToRTDB(context: context);
     } else {
         if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Gagal menyimpan pilihan tanaman ke server.")));
     }
 
     if (rtdbSuccess) {
-      _updateDisplayParametersFromActiveData(); // Update nilai ideal untuk Overview
+      _updateDisplayParametersFromActiveData();
       if (kDebugMode) print("[HandlingProvider] Applied preset '$_activeSelectedPlant' to active and RTDB.");
     }
     return rtdbSuccess && firestoreSuccess;
   }
 
-  // METHOD BARU: Dipanggil dari tombol "Simpan Parameter Kustom" di EditInfo
+
   Future<bool> applyCustomDraftToActive(BuildContext context, Map<String, dynamic> customParamsFromForm) async {
-    // Update _draftParametersForEditing dengan data dari form, pastikan field meta Kustom ada
-    _draftParametersForEditing = Map.from(parameters['Kustom']!); // Mulai dengan template Kustom
-    _draftParametersForEditing.addAll(customParamsFromForm); // Timpa dengan nilai dari form
+    _draftParametersForEditing = Map.from(parameters['Kustom']!);
+    _draftParametersForEditing.addAll(customParamsFromForm);
     _draftSelectedPlantForEditing = "Kustom";
 
 
-    _activeParameters = Map.from(_draftParametersForEditing); // Commit draft ke aktif
+    _activeParameters = Map.from(_draftParametersForEditing);
     _activeSelectedPlant = "Kustom";
 
-    bool firestoreSuccess = await _saveActiveSelectedPlantToFirestore(context); // Simpan "Kustom" ke Firestore
+    bool firestoreSuccess = await _saveActiveSelectedPlantToFirestore(context);
     bool rtdbSuccess = false;
     if (firestoreSuccess) {
-        rtdbSuccess = await _saveActiveParametersToRTDB(context: context, forceParams: _activeParameters); // Kirim _activeParameters (Kustom)
+        rtdbSuccess = await _saveActiveParametersToRTDB(context: context, forceParams: _activeParameters);
     } else {
          if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Gagal menyimpan pilihan 'Kustom' ke server.")));
     }
 
 
     if (rtdbSuccess) {
-      _updateDisplayParametersFromActiveData(); // Update nilai ideal untuk Overview
+      _updateDisplayParametersFromActiveData();
       if (kDebugMode) print("[HandlingProvider] Applied custom parameters (title: '${_activeParameters['title']}') to active and RTDB.");
     }
     return rtdbSuccess && firestoreSuccess;
   }
 
-  // Helper untuk menyimpan _activeSelectedPlant ke Firestore
   Future<bool> _saveActiveSelectedPlantToFirestore(BuildContext context) async {
     final uid = AuthService.currentUser?.uid;
-    if (uid == null) return false; // Tidak ada user, tidak bisa simpan
-    if (_activeSelectedPlant.isEmpty) return false; // Tidak ada yang dipilih
+    if (uid == null) return false;
+    if (_activeSelectedPlant.isEmpty) return false;
 
     return await AuthService.updateUserDocument(uid, {'selectedPlant': _activeSelectedPlant}, context);
   }
 
-  // Helper untuk menyimpan _activeParameters ke RTDB
-  // Menggunakan forceParams jika ingin mengirim map spesifik, jika tidak pakai _activeParameters
   Future<bool> _saveActiveParametersToRTDB({BuildContext? context, Map<String, dynamic>? forceParams}) async {
     if (!_isSeedKeyReady || _userSeedkey == null || _userSeedkey!.isEmpty || _activeParameterDataRef == null) {
       if (context?.mounted ?? false) ScaffoldMessenger.of(context!).showSnackBar(const SnackBar(content: Text("SeedKey/Referensi DB belum siap.")));
@@ -560,11 +531,10 @@ class HandlingProvider extends ChangeNotifier {
       return false;
     }
     
-    // Pastikan field meta (title, latin, thumbnail) ada sebelum menyimpan ke RTDB
     String plantKeyForMeta = _activeSelectedPlant;
     if (_activeSelectedPlant == "Kustom" && (forceParams != null || paramsToSave['title'] == parameters['Kustom']!['title'])) {
-        plantKeyForMeta = "Kustom"; // Gunakan meta dari template Kustom
-    } else if (!parameters.containsKey(_activeSelectedPlant)) { // Jika _activeSelectedPlant tidak dikenal, fallback ke Kustom untuk meta
+        plantKeyForMeta = "Kustom";
+    } else if (!parameters.containsKey(_activeSelectedPlant)) {
         plantKeyForMeta = "Kustom";
     }
 
@@ -591,8 +561,7 @@ class HandlingProvider extends ChangeNotifier {
       return false;
     }
   }
-  
-  // --- Metode utilitas & lainnya (parse, listener error, requestPh, dll. tetap sama) ---
+
   void _handleListenerError(String listenerName, Object error) {
     if (kDebugMode) print("[$runtimeType] Firebase Listener Error ($listenerName): $error");
     if (listenerName == "OnDemandPHResult") {
@@ -600,7 +569,6 @@ class HandlingProvider extends ChangeNotifier {
       isPhMeasuring = false;
     }
     if (listenerName == "ActiveParameter" && (_activeParameters.isEmpty || _activeSelectedPlant.isEmpty)) {
-        // Jika parameter aktif gagal dimuat dari RTDB, coba inisialisasi dari lokal
         String plantToUse = _activeSelectedPlant.isNotEmpty && parameters.containsKey(_activeSelectedPlant) ? _activeSelectedPlant : parameters.keys.first;
         _activeSelectedPlant = plantToUse;
         _activeParameters = Map.from(parameters[plantToUse]!);
@@ -696,15 +664,6 @@ class HandlingProvider extends ChangeNotifier {
     }
   }
   
-  // Metode lama yang tidak lagi digunakan atau digantikan:
-  // - setSelectedPlant (diganti dengan _initializeActivePlantAndParameters dan selectPlantForEditingPage)
-  // - saveSelectedPlantToFirestore (menjadi _saveActiveSelectedPlantToFirestore)
-  // - saveParametersToRTDB (menjadi _saveActiveParametersToRTDB)
-  // - currentPresetParameters, currentPresetInfo (diganti dengan getter spesifik untuk draft dan aktif)
-  // - _updateLocalParameterDataToReflectSelectedPlant (logikanya terintegrasi)
-  // - _loadSelectedPlantFromPrefsOrDefault (terintegrasi di _initializeProviderStates)
-
-  // Metode untuk update user seed key
    Future<void> updateUserSeedKey(String seedKey) async {
     final newSeedKeyValue = seedKey.isNotEmpty ? seedKey : null;
     
@@ -721,7 +680,7 @@ class HandlingProvider extends ChangeNotifier {
     _isInitialized = false; 
     if(hasListeners) notifyListeners();
 
-    await _initializeProviderStates(); // Re-inisialisasi semua state berdasarkan seedkey baru
+    await _initializeProviderStates();
   }
 
   @override

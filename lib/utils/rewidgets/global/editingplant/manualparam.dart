@@ -55,9 +55,6 @@ class _EditInfoState extends State<EditInfo> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Panggil lagi jika ada perubahan dependensi yang relevan,
-    // misalnya jika HandlingProvider instance berubah.
-    // Atau jika draft di provider diubah oleh mekanisme lain (jarang terjadi untuk halaman edit).
     _loadParametersFromProviderDraft();
   }
 
@@ -70,16 +67,12 @@ class _EditInfoState extends State<EditInfo> {
     Map<String, dynamic> params = provider.draftParametersForEditing;
 
     if (params.isEmpty && provider.draftSelectedPlantForEditing == "Kustom") {
-        params = provider.parameters["Kustom"]!; // Fallback ke default Kustom jika draft kosong
+        params = provider.parameters["Kustom"]!;
     }
     
-    // Logika untuk memastikan title dan latin sesuai untuk Kustom saat load
     String titleToSet = params['title']?.toString() ?? provider.parameters['Kustom']!['title'].toString();
     String latinToSet = params['latin']?.toString() ?? provider.parameters['Kustom']!['latin'].toString();
 
-    // Jika sumber draft adalah preset (misal "Bayam" baru dipilih lalu user switch ke "Kustom"),
-    // maka title dan latin di form Kustom harus direset ke default Kustom.
-    // Kita bisa cek apakah title dari params adalah salah satu nama preset.
     bool isTitlePreset = provider.parameters.keys.any((key) => key != "Kustom" && key == titleToSet);
     if (isTitlePreset) {
         titleToSet = provider.parameters['Kustom']!['title'].toString();
@@ -132,7 +125,7 @@ class _EditInfoState extends State<EditInfo> {
       'max_suhuling': double.tryParse(_suhuLingMaxController.text) ?? 0.0,
       'min_humiling': int.tryParse(_humiLingMinController.text) ?? 0,
       'max_humiling': int.tryParse(_humiLingMaxController.text) ?? 0,
-      // Thumbnail akan diurus oleh provider.applyCustomDraftToActive
+
     };
     
     bool success = await provider.applyCustomDraftToActive(context, parametersToSaveFromForm);
@@ -159,7 +152,6 @@ class _EditInfoState extends State<EditInfo> {
     super.dispose();
   }
 
-  // --- Metode validasi (Sama seperti UI lama Anda) ---
   String? _validateRequired(String? value, String fieldName) {
     if (value == null || value.trim().isEmpty) {
       return '$fieldName wajib diisi';
@@ -190,7 +182,6 @@ class _EditInfoState extends State<EditInfo> {
     return null;
   }
 
-  // --- Metode build TextFormField (Sama seperti UI lama Anda) ---
   Widget _buildSingleTextFormField({
     required String label,
     required TextEditingController controller,
@@ -200,7 +191,7 @@ class _EditInfoState extends State<EditInfo> {
     num? absoluteMax,
     bool allowZeroForInt = true,
   }) {
-    return Padding( // UI Lama
+    return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10.0),
       child: TextFormField(
         controller: controller,
@@ -213,11 +204,11 @@ class _EditInfoState extends State<EditInfo> {
         decoration: InputDecoration(
           labelText: label,
           suffixText: unit,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)), // UI Lama
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14), // UI Lama
-          isDense: true, // UI Lama
-          helperText: isDecimal ? "Gunakan '.' untuk desimal" : "Angka bulat", // UI Lama
-          helperStyle: TextStyle(fontSize: 11, color: Colors.grey.shade600) // UI Lama
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          isDense: true, 
+          helperText: isDecimal ? "Gunakan '.' untuk desimal" : "Angka bulat",
+          helperStyle: TextStyle(fontSize: 11, color: Colors.grey.shade600) 
         ),
         validator: (value) {
           return isDecimal
@@ -228,7 +219,7 @@ class _EditInfoState extends State<EditInfo> {
     );
   }
 
-  Widget _buildMinMaxTextFormFieldRow({ // UI Lama
+  Widget _buildMinMaxTextFormFieldRow({
     required String label,
     required TextEditingController minController,
     required TextEditingController maxController,
@@ -327,7 +318,7 @@ class _EditInfoState extends State<EditInfo> {
     );
   }
 
-  Widget _buildSectionTitle(String title) { // UI Lama
+  Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.only(top: 16.0, bottom: 4.0),
       child: Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: GColors.myBiru)),
@@ -339,10 +330,9 @@ class _EditInfoState extends State<EditInfo> {
     final providerForImage = Provider.of<HandlingProvider>(context, listen: false);
     final plantInfoForImage = providerForImage.draftPlantInfoForEditingPage;
 
-    // UI Lama: Container utama, form, dan elemen-elemennya
     return Container(
       width: MediaQuery.of(context).size.width,
-      decoration: BoxDecoration( // UI Lama
+      decoration: BoxDecoration( 
           borderRadius: BorderRadius.circular(16),
           color: Colors.white,
           boxShadow: [
@@ -353,18 +343,18 @@ class _EditInfoState extends State<EditInfo> {
                 offset: const Offset(0, 3))
           ]),
       child: Padding(
-        padding: const EdgeInsets.all(16.0), // UI Lama
+        padding: const EdgeInsets.all(16.0), 
         child: _isLoadingForm 
             ? Center(child: CircularProgressIndicator()) 
-            : SingleChildScrollView( // UI Lama
+            : SingleChildScrollView( 
                 child: Form(
                   key: _formKey,
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start, // UI Lama
+                    crossAxisAlignment: CrossAxisAlignment.start, 
                     children: [
-                      Row( // UI Lama
+                      Row( 
                         children: [
-                          Container( // UI Lama
+                          Container( 
                             width: 80, height: 80,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
@@ -374,11 +364,11 @@ class _EditInfoState extends State<EditInfo> {
                             ),
                           ),
                           const SizedBox(width: 16),
-                          Expanded( // UI Lama
+                          Expanded( 
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                TextFormField( // UI Lama
+                                TextFormField( 
                                   controller: _titleController,
                                   decoration: const InputDecoration(
                                     labelText: "Nama Tanaman Kustom",
@@ -395,7 +385,7 @@ class _EditInfoState extends State<EditInfo> {
                                     return null;
                                   }
                                 ),
-                                TextFormField( // UI Lama
+                                TextFormField( 
                                   controller: _latinController,
                                    decoration: const InputDecoration(
                                     labelText: "Nama Latin/Deskripsi",
@@ -408,10 +398,10 @@ class _EditInfoState extends State<EditInfo> {
                           )
                         ],
                       ),
-                      const Divider(height: 32, thickness: 1), // UI Lama
+                      const Divider(height: 32, thickness: 1), 
                      
-                      _buildSectionTitle("Pengaturan Penyiraman"), // UI Lama
-                      _buildSingleTextFormField( // UI Lama
+                      _buildSectionTitle("Pengaturan Penyiraman"), 
+                      _buildSingleTextFormField( 
                           label: "Waktu Siram",
                           controller: _waktuSiramController,
                           unit: "Menit",
@@ -419,7 +409,7 @@ class _EditInfoState extends State<EditInfo> {
                           absoluteMin: 1, 
                           allowZeroForInt: false,
                       ),
-                      _buildSingleTextFormField( // UI Lama
+                      _buildSingleTextFormField( 
                           label: "Jeda Siram",
                           controller: _jedaSiramController,
                           unit: "Menit",
@@ -428,29 +418,29 @@ class _EditInfoState extends State<EditInfo> {
                           allowZeroForInt: false,
                       ),
 
-                      _buildSectionTitle("Parameter Air"), // UI Lama
-                      _buildMinMaxTextFormFieldRow( // UI Lama
+                      _buildSectionTitle("Parameter Air"), 
+                      _buildMinMaxTextFormFieldRow( 
                           label: "Nutrisi (TDS)",
                           minController: _nutrisiMinController,
                           maxController: _nutrisiMaxController,
                           unit: "ppm",
                           isDecimal: false,
                           absoluteMin: 0),
-                      _buildMinMaxTextFormFieldRow( // UI Lama
+                      _buildMinMaxTextFormFieldRow( 
                           label: "Suhu Air",
                           minController: _suhuAirMinController,
                           maxController: _suhuAirMaxController,
                           unit: "°C",
                           isDecimal: true),
                      
-                      _buildSectionTitle("Parameter Lingkungan"), // UI Lama
-                       _buildMinMaxTextFormFieldRow( // UI Lama
+                      _buildSectionTitle("Parameter Lingkungan"), 
+                       _buildMinMaxTextFormFieldRow( 
                           label: "Suhu Lingkungan",
                           minController: _suhuLingMinController,
                           maxController: _suhuLingMaxController,
                           unit: "°C",
                           isDecimal: true),
-                      _buildMinMaxTextFormFieldRow( // UI Lama
+                      _buildMinMaxTextFormFieldRow( 
                           label: "Kelembapan Udara",
                           minController: _humiLingMinController,
                           maxController: _humiLingMaxController,
@@ -459,8 +449,8 @@ class _EditInfoState extends State<EditInfo> {
                           absoluteMin: 0,
                           absoluteMax: 100
                       ),
-                      const SizedBox(height: 24), // UI Lama
-                      ElevatedButton( // UI Lama
+                      const SizedBox(height: 24), 
+                      ElevatedButton( 
                         onPressed: _isSaving ? null : _submitCustomParameters,
                         style: ElevatedButton.styleFrom(
                             backgroundColor: GColors.myBiru,
@@ -479,7 +469,7 @@ class _EditInfoState extends State<EditInfo> {
                                 ],
                               ),
                       ),
-                      const SizedBox(height: 16), // UI Lama
+                      const SizedBox(height: 16), 
                     ],
                   ),
                 ),

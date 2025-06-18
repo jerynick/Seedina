@@ -36,14 +36,10 @@ class _PresetParamSetupState extends State<PresetParamSetup> {
       if (success) {
         Navigator.of(context).pushNamedAndRemoveUntil('/wifiSetup', (route) => false);
       }
-      // Pesan error/sukses sudah dihandle provider
       setState(() => _isSaving = false);
     }
   }
 
-  // Widget _buildInfoRow dari versi UI lama Anda bisa ditaruh di sini jika ada,
-  // atau kita gunakan InfoColumn seperti di versi sebelumnya jika desainnya mirip.
-  // Untuk mengembalikan UI lama, kita akan mengasumsikan InfoColumn adalah bagian dari itu.
 
   @override
   Widget build(BuildContext context) {
@@ -51,9 +47,6 @@ class _PresetParamSetupState extends State<PresetParamSetup> {
       builder: (context, provider, child) {
         final String currentDraftPlant = provider.draftSelectedPlantForEditing;
         final Map<String, dynamic> currentDraftParams = provider.draftParametersForEditing;
-
-        // Jika draft adalah Kustom atau kosong, atau tidak ada di map preset provider, tampilkan pesan.
-        // Ini penting karena PresetParamSetup hanya untuk preset di alur setup awal.
         if (currentDraftPlant.isEmpty || 
             currentDraftPlant == "Kustom" || 
             currentDraftParams.isEmpty ||
@@ -78,15 +71,14 @@ class _PresetParamSetupState extends State<PresetParamSetup> {
         final String idealWaktuSiramDisplay = provider.idealWaktuSiramForEditingPage.toStringAsFixed(1);
 
 
-        // UI Lama: Container dengan shadow, gambar, info, dan tombol
         return Container(
           width: MediaQuery.of(context).size.width,
-          decoration: BoxDecoration( // UI Lama: dekorasi container
+          decoration: BoxDecoration( 
             borderRadius: BorderRadius.circular(16),
-            color: Colors.white70, // UI Lama: warna latar
+            color: Colors.white70,
             boxShadow: [
               BoxShadow(
-                color: GColors.shadowColor, // UI Lama: shadow
+                color: GColors.shadowColor,
                 blurRadius: 4,
                 spreadRadius: 1,
                 offset: const Offset(0, 2),
@@ -94,11 +86,11 @@ class _PresetParamSetupState extends State<PresetParamSetup> {
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.all(12), // UI Lama: padding
+            padding: const EdgeInsets.all(12), 
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row( // UI Lama: Row untuk gambar dan info
+                Row(
                   children: [
                     SizedBox(
                       width: 100,
@@ -128,9 +120,9 @@ class _PresetParamSetupState extends State<PresetParamSetup> {
                     )
                   ],
                 ),
-                const Divider(), // UI Lama: Divider
-                const SizedBox(height: 10), // UI Lama: SizedBox
-                Column( // UI Lama: Kolom untuk parameter InfoColumn
+                const Divider(), //: Divider
+                const SizedBox(height: 10), //: SizedBox
+                Column( //: Kolom untuk parameter InfoColumn
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -179,8 +171,8 @@ class _PresetParamSetupState extends State<PresetParamSetup> {
                     ),
                   ],
                 ),
-                const Divider(), // UI Lama: Divider
-                ElevatedButton( // UI Lama: Tombol
+                const Divider(), //: Divider
+                ElevatedButton( //: Tombol
                   onPressed: _isSaving ? null : () => _applyAndFinish(context),
                   style: ElevatedButton.styleFrom( // Mengembalikan style tombol dari UI lama jika ada, atau default ini
                     backgroundColor: GColors.myBiru, // Sesuaikan dengan UI lama
